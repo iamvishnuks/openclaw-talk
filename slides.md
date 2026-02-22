@@ -4,6 +4,20 @@ theme: gaia
 paginate: true
 backgroundColor: #1a1a2e
 color: #fff
+style: |
+  pre {
+    font-size: 0.5em;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  code {
+    font-size: 0.5em;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  table {
+    font-size: 0.7em;
+  }
 ---
 
 <!-- _class: lead -->
