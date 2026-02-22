@@ -74,48 +74,53 @@ OpenClaw is a self-hosted AI agent orchestration platform.
 
 # High-Level Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                     Channels                           │
-│  ┌────────┐ ┌──────────┐ ┌────────┐ ┌──────────┐  │
-│  │Telegram│ │WhatsApp  │ │Discord │ │   HTTP   │  │
-│  └────┬───┘ └────┬─────┘ └────┬───┘ └────┬─────┘  │
-│       │          │           │          │          │
-└───────┼──────────┼───────────┼──────────┼──────────┘
-        │          │           │          │
-        ▼          ▼           ▼          ▼
-┌─────────────────────────────────────────────────────────┐
-│                   Gateway                              │
-│  • Authentication                                       │
-│  • Message routing                                     │
-│  • Session management                                  │
-│  • Node orchestration                                 │
-└────────────────────────┬────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────┐
-│                   Agents                               │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐           │
-│  │  Main    │ │ Subagent │ │  Special  │           │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘           │
-│       │            │            │                     │
-│       └────────────┼────────────┘                     │
-│                    ▼                                 │
-│           ┌─────────────────┐                         │
-│           │   Tools        │                         │
-│           │  • exec        │                         │
-│           │  • browser     │                         │
-│           │  • web_search  │                         │
-│           │  • message     │                         │
-│           └─────────────────┘                         │
-└──────────────────┬──────────────────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────────────────┐
-│                    Skills                              │
-│  • github  • healthcheck  • weather                   │
-│  • canvas  • coding-agent  • (custom...)               │
-└─────────────────────────────────────────────────────────┘
+```mermaid
+graph TB
+    subgraph Channels
+        T[Telegram]
+        W[WhatsApp]
+        D[Discord]
+        H[HTTP]
+    end
+    
+    Channels --> Gateway
+    Gateway --> Agents
+    Agents --> Tools
+    Agents --> Skills
+    
+    subgraph Gateway
+        GA[Authentication]
+        GR[Message Routing]
+        SM[Session Management]
+        NO[Node Orchestration]
+    end
+    
+    subgraph Agents
+        Main[Main Agent]
+        Sub[Subagents]
+        Spec[Special Agents]
+    end
+    
+    subgraph Tools
+        Ex[exec]
+        Br[browser]
+        Ws[web_search]
+        Msg[message]
+    end
+    
+    subgraph Skills
+        GH[github]
+        HC[healthcheck]
+        We[weather]
+        CV[canvas]
+        CA[coding-agent]
+        Custom[(custom...)]
+    end
+    
+    style Gateway fill:#4a90e2
+    style Agents fill:#007acc
+    style Tools fill:#f39c12
+    style Skills fill:#00d084
 ```
 
 ---
@@ -171,32 +176,25 @@ OpenClaw is a self-hosted AI agent orchestration platform.
 
 # Data Flow Example
 
-```
-User Message (Telegram)
-        │
-        ▼
-Gateway receives message
-        │
-        ▼
-Route to Main Agent
-        │
-        ▼
-Agent reads context (SOUL.md, USER.md, MEMORY.md)
-        │
-        ▼
-Check memory_search for relevant history
-        │
-        ▼
-Load applicable skills (if any)
-        │
-        ▼
-Execute tools (gh, browser, exec, etc.)
-        │
-        ▼
-Generate response
-        │
-        ▼
-Gateway sends back to Telegram
+```mermaid
+sequenceDiagram
+    participant User as U
+    participant Gateway as G
+    participant Agent as A
+    participant Memory as M
+    participant GitHub as GH
+    
+    U->>G: User Message (Telegram)
+    G->>A: Route to Main Agent
+    A->>A: Read context (SOUL.md, USER.md, MEMORY.md)
+    A->>M: Check memory_search for relevant history
+    M-->>A: Relevant snippets
+    A->>A: Load applicable skills (if any)
+    A->>GH: Execute tools (gh, browser, exec, etc.)
+    GH-->>A: Tool results
+    A->>A: Generate response
+    A->>G: Send response
+    G->>U: Receive response (Telegram)
 ```
 
 ---
