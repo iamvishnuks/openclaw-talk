@@ -16,7 +16,7 @@ style: |
     word-break: break-word;
   }
   table {
-    font-size: 0.7em;
+    font-size: 0.6em;
   }
 ---
 
@@ -337,13 +337,19 @@ When I say "write it down", I update:
 
 # Good vs Bad Instructions
 
+---
+
 ## ❌ Bad Instructions
+
 - "Be nice" (too vague)
 - "Review my code" (no focus area)
 - "Do whatever you want" (no constraints)
 - Long, rambling descriptions
 
+---
+
 ## ✅ Good Instructions
+
 - "Be casual and direct, skip fluff"
 - "Review Terraform for security issues: exposed ports, secrets, IAM"
 - "Use memory_search before answering about prior decisions"
@@ -396,6 +402,10 @@ Casual, practical, capable. Like a competent colleague.
 ```
 
 ---
+- Respect quiet hours: 23:00-08:00
+```
+
+---
 
 <!-- _class: lead -->
 
@@ -404,6 +414,10 @@ Casual, practical, capable. Like a competent colleague.
 ---
 
 # Memory Architecture
+
+---
+
+# Session Start Flow
 
 ```
 Session Start
@@ -515,7 +529,9 @@ memory_get(path: "memory/2026-02-21.md", from: 10, lines: 5)
 
 # Why This Matters
 
-## Benefits
+---
+
+## Benefits Table
 
 | Aspect | Traditional Approach | OpenClaw RAG |
 |--------|-------------------|--------------|
@@ -523,6 +539,8 @@ memory_get(path: "memory/2026-02-21.md", from: 10, lines: 5)
 | **Token Efficiency** | Waste on irrelevant data | Read specific lines |
 | **Accuracy** | Guess context | Semantic search finds exact matches |
 | **Privacy** | Everything in prompt | MEMORY.md only in private sessions |
+
+---
 
 ## Key Principle
 
@@ -575,6 +593,17 @@ memory_get(path: "memory/2026-02-21.md", from: 10, lines: 5)
 │    • Fetch PR #42                   │
 │    • Read Terraform diffs          │
 │    • Analyze code                  │
+│    • Generate review               │
+└──────────────┬───────────────────────┘
+```
+
+---
+
+# Demo Steps (continued)
+
+```
+┌──────────────────────────────────────┐
+│ 3. Yiti Agent (continued)         │
 │    • Generate review               │
 └──────────────┬───────────────────────┘
                │
