@@ -136,19 +136,28 @@ OpenClaw is a self-hosted AI agent orchestration platform.
 
 # Components Deep Dive
 
+---
+
 ## Gateway
+
 - **Port:** Configurable (default: 18789)
 - **Auth:** Token-based, supports Tailscale
 - **Binding:** loopback, public, or node-hosted
 - **Node Management:** Register and control remote devices
 
+---
+
 ## Agents
+
 - **Main Agent:** Primary conversation handler
 - **Subagents:** Background workers for parallel tasks
 - **Special Agents:** Different models or configurations
 - **Isolation:** Each agent has its own context and tools
 
+---
+
 ## Tools
+
 - **Built-in:** exec, browser, web_search, web_fetch, message, etc.
 - **Extensible:** Add custom tools via skills
 - **Sandboxing:** Can run in container or on host
@@ -157,10 +166,14 @@ OpenClaw is a self-hosted AI agent orchestration platform.
 
 # Skills System
 
+---
+
+## Directory Structure
+
 ```
 /app/skills/
 ├── github/
-│   └── SKILL.md (instructions + examples)
+│   └── SKILL.md
 ├── healthcheck/
 │   └── SKILL.md
 ├── weather/
@@ -171,12 +184,18 @@ OpenClaw is a self-hosted AI agent orchestration platform.
     └── resources/
 ```
 
-**When to use a skill:**
+---
+
+## When to Use a Skill
+
 - Task matches skill description exactly
 - Need specialized workflows or tooling
 - Want reusable patterns across agents
 
-**How I detect skills:**
+---
+
+## How I Detect Skills
+
 - Match task description to skill metadata
 - Auto-load SKILL.md when applicable
 - Follow skill instructions precisely
@@ -185,7 +204,35 @@ OpenClaw is a self-hosted AI agent orchestration platform.
 
 # Data Flow Example
 
-```mermaid
+```
+User Message (Telegram)
+        │
+        ▼
+Gateway receives message
+        │
+        ▼
+Route to Main Agent
+        │
+        ▼
+Agent reads context (SOUL.md, USER.md, MEMORY.md)
+        │
+        ▼
+Check memory_search for relevant history
+        │
+        ▼
+Load applicable skills (if any)
+        │
+        ▼
+Execute tools (gh, browser, exec, etc.)
+        │
+        ▼
+Generate response
+        │
+        ▼
+Gateway sends back to Telegram
+```
+
+---mermaid
 sequenceDiagram
     participant User as U
     participant Gateway as G
