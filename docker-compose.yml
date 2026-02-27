@@ -9,6 +9,7 @@ services:
       CLAUDE_AI_SESSION_KEY: ${CLAUDE_AI_SESSION_KEY}
       CLAUDE_WEB_SESSION_KEY: ${CLAUDE_WEB_SESSION_KEY}
       CLAUDE_WEB_COOKIE: ${CLAUDE_WEB_COOKIE}
+      GH_TOKEN: ${GH_TOKEN} 
     volumes:
       - /openclaw/.openclaw:/home/node/.openclaw
       - /openclaw/.openclaw/workspace:/home/node/.openclaw/workspace
@@ -17,6 +18,7 @@ services:
       - "${OPENCLAW_BRIDGE_PORT:-18790}:18790"
     init: true
     restart: unless-stopped
+    entrypoint: ["/usr/local/bin/entrypoint.sh"]
     command:
       [
         "node",

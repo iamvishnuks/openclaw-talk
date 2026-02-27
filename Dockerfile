@@ -29,4 +29,7 @@ RUN apt-get update && apt-get install -y curl gpg jq unzip pandoc \
 
 RUN npm install -g @marp-team/marp-cli
 
+COPY --chown=node:node entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 USER node
