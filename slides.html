@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OpenClaw: Good, Bad & How I Actually Use It</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0d0f14;--surface:#13161d;--surfaceLight:#1a1e28;--border:#252a36;
+--accent:#c084fc;--accentDim:#7c3aed;--mint:#6ee7b7;--mintDim:#34d399;
+--coral:#fb7185;--amber:#fbbf24;--sky:#67e8f9;--red:#ef4444;
+--text:#e2e8f0;--textDim:#94a3b8;--textMuted:#64748b;--white:#f8fafc;
+--sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',monospace;
+}
+@media screen{
+body{background:#000;display:flex;flex-direction:column;align-items:center;gap:24px;padding:32px 0}
+.slide{width:960px;height:540px;flex-shrink:0}
+.print-instructions{
+position:fixed;top:0;left:0;right:0;background:var(--accent);color:#000;
+text-align:center;padding:10px;font-family:var(--sans);font-size:14px;font-weight:600;z-index:999;
+}
+.print-instructions span{font-weight:400;margin-left:8px}
+}
+@media print{
+@page{size:960px 540px;margin:0}
+body{margin:0;padding:0;background:#000}
+.slide{width:960px;height:540px;page-break-after:always;page-break-inside:avoid;overflow:hidden}
+.slide:last-child{page-break-after:avoid}
+.print-instructions{display:none}
+}
+.slide{
+background:var(--bg);position:relative;overflow:hidden;
+display:flex;flex-direction:column;padding:48px 56px;color:var(--text);
+font-family:var(--sans);
+}
+.slide.center{justify-content:center;align-items:center}
+.tag{
+font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:0.12em;
+text-transform:uppercase;padding:3px 10px;border-radius:4px;display:inline-block;margin-bottom:16px;
+}
+.tag-accent{color:var(--accent);border:1px solid #c084fc33;background:#c084fc11}
+.tag-mint{color:var(--mint);border:1px solid #6ee7b733;background:#6ee7b711}
+.tag-sky{color:var(--sky);border:1px solid #67e8f933;background:#67e8f911}
+.tag-amber{color:var(--amber);border:1px solid #fbbf2433;background:#fbbf2411}
+.tag-coral{color:var(--coral);border:1px solid #fb718533;background:#fb718511}
+.tag-red{color:var(--red);border:1px solid #ef444433;background:#ef444411}
+.tag-muted{color:var(--textMuted);border:1px solid #64748b33;background:#64748b11}
+h1{font-family:var(--sans);font-size:38px;font-weight:700;color:var(--white);line-height:1.2;letter-spacing:-0.02em;margin-bottom:8px}
+h2{font-family:var(--sans);font-size:22px;font-weight:600;color:var(--white);line-height:1.3;margin-bottom:16px}
+.p{font-family:var(--sans);font-size:15px;color:var(--textDim);line-height:1.65;margin-bottom:12px}
+.divider{width:48px;height:2px;background:linear-gradient(90deg,var(--accent),transparent);margin:16px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-item{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 16px}
+.grid-item .icon{font-size:20px;margin-bottom:6px}
+.grid-item .title{font-family:var(--sans);font-size:13px;font-weight:600;margin-bottom:4px}
+.grid-item .desc{font-family:var(--sans);font-size:11.5px;color:var(--textMuted);line-height:1.5}
+.compare-header{display:grid;grid-template-columns:140px 1fr 1fr;gap:12px;padding:8px 0;margin-bottom:4px}
+.compare-header span{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.1em;color:var(--textMuted)}
+.compare-header .oc{color:var(--mint)}
+.compare-row{display:grid;grid-template-columns:140px 1fr 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)}
+.compare-row .label{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--textDim)}
+.compare-row .trad{font-family:var(--sans);font-size:12px;color:var(--textMuted)}
+.compare-row .val{font-family:var(--sans);font-size:12px;color:var(--mint)}
+.pill{font-family:var(--sans);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;display:inline-block}
+.file-tag{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;margin-bottom:8px}
+.file-tag .name{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent)}
+.file-tag .purpose{font-family:var(--sans);font-size:11px;color:var(--textMuted)}
+.code-block{font-family:var(--mono);font-size:11px;color:var(--mint);background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 18px;margin:8px 0;line-height:1.7;white-space:pre-wrap}
+.flow-col{display:flex;flex-direction:column;align-items:center;gap:0}
+.flow-box{background:var(--surface);border-radius:8px;padding:12px 16px;min-width:120px;text-align:center}
+.flow-box .fb-icon{font-size:18px;margin-bottom:4px}
+.flow-box .fb-label{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--white)}
+.flow-box .fb-sub{font-family:var(--mono);font-size:10px;color:var(--textMuted);margin-top:4px}
+.arrow-down{display:flex;justify-content:center;padding:4px 0}
+.arrow-down svg{display:block}
+.step-row{display:flex;align-items:center;gap:12px;padding:8px 20px;background:var(--surface);border-radius:8px;min-width:340px}
+.step-row .s-icon{font-size:16px}
+.step-row .s-label{font-family:var(--sans);font-size:13px;font-weight:600}
+.step-row .s-sub{font-family:var(--mono);font-size:10px;color:var(--textMuted)}
+.incident{background:var(--surface);border-radius:10px;padding:14px 16px;display:flex;gap:12px;border-left:3px solid var(--coral);margin-bottom:10px}
+.incident.crit{border-left-color:var(--red)}
+.incident .i-icon{font-size:22px;flex-shrink:0}
+.incident .i-title{font-family:var(--sans);font-size:13px;font-weight:700;margin-bottom:4px}
+.incident .i-desc{font-family:var(--sans);font-size:11.5px;color:var(--textDim);line-height:1.55}
+.incident .i-src{font-family:var(--mono);font-size:9px;color:var(--textMuted);margin-top:6px}
+.stat-box{background:var(--surface);border-radius:10px;padding:16px 18px}
+.stat-box .s-num{font-family:var(--mono);font-size:28px;font-weight:800;letter-spacing:-0.02em}
+.stat-box .s-label{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--white);margin-top:4px}
+.stat-box .s-sub{font-family:var(--sans);font-size:10.5px;color:var(--textMuted);margin-top:4px;line-height:1.4}
+.note-box{padding:10px 16px;border-radius:8px;margin-top:14px}
+.note-box.red-bg{background:#ef444410;border:1px solid #ef444420}
+.note-box.amber-bg{background:#fbbf2410;border:1px solid #fbbf2420}
+.note-box.surface-bg{background:var(--surfaceLight);border:1px solid var(--border)}
+.glow{position:absolute;border-radius:50%;pointer-events:none}
+.arch-layer{display:flex;gap:10px;padding:10px 20px;background:var(--surfaceLight);border-radius:10px;border:1px solid var(--border)}
+.arch-gateway{padding:12px 32px;background:var(--surface);border-radius:10px;border:1px solid #c084fc30;text-align:center}
+.arch-agents{display:flex;gap:16px;padding:14px 24px;background:var(--surfaceLight);border-radius:10px;border:1px solid var(--border);align-items:center}
+.agent-pill{font-family:var(--mono);font-size:11px;color:var(--mint);padding:4px 12px;background:var(--surface);border-radius:6px;border:1px solid #6ee7b720;margin-bottom:6px}
+.tools-box{padding:10px 16px;background:var(--surface);border-radius:8px;border:1px solid var(--border)}
+.arrow-right{display:flex;align-items:center;padding:0 6px}
+.ctx-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:16px;background:var(--surfaceLight);border-radius:10px;border:1px solid var(--border)}
+.ctx-item{display:flex;align-items:center;gap:8px;padding:6px 12px;background:var(--surface);border-radius:6px}
+.ctx-item .c-name{font-family:var(--mono);font-size:11px;font-weight:600}
+.ctx-item .c-desc{font-family:var(--sans);font-size:10px;color:var(--textMuted)}
+.col2-list .col-head{font-family:var(--sans);font-size:13px;font-weight:700;margin-bottom:10px}
+.col2-list .col-item{font-family:var(--sans);font-size:12px;padding:6px 0;border-bottom:1px solid var(--border)}
+.tip-card{display:flex;gap:12px;padding:12px 14px;background:var(--surface);border-radius:8px;border:1px solid var(--border);align-items:flex-start}
+.tip-card .t-num{font-family:var(--mono);font-size:12px;font-weight:700;min-width:22px}
+.tip-card .t-title{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--white)}
+.tip-card .t-desc{font-family:var(--sans);font-size:11px;color:var(--textMuted);margin-top:2px}
+.lesson-card{background:var(--surface);border-radius:10px;padding:16px}
+.lesson-card .l-icon{font-size:20px}
+.lesson-card .l-title{font-family:var(--sans);font-size:13px;font-weight:700;margin-top:6px;margin-bottom:4px}
+.lesson-card .l-desc{font-family:var(--sans);font-size:11.5px;color:var(--textDim);line-height:1.5}
+.pitfall-row{display:grid;grid-template-columns:28px 1fr 1fr 1fr;gap:12px;padding:10px 14px;background:var(--surface);border-radius:8px;border:1px solid var(--border);align-items:center;margin-bottom:10px}
+.pitfall-row .p-icon{font-size:16px}
+.pitfall-row .p-issue{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--coral)}
+.pitfall-row .p-cause{font-family:var(--sans);font-size:11px;color:var(--textMuted)}
+.pitfall-row .p-fix{font-family:var(--sans);font-size:11px;color:var(--mint)}
+.moltbook-flow{display:flex;flex-direction:column;align-items:center}
+.moltbook-flow .mf-row{display:flex;gap:10px}
+.resource-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.resource-row .r-label{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--textDim);min-width:90px}
+.resource-row .r-url{font-family:var(--mono);font-size:12px;color:var(--accent)}
+.strength-card{background:var(--surface);border-radius:10px;padding:16px}
+.strength-card .sc-title{font-family:var(--sans);font-size:13px;font-weight:700;margin-bottom:4px}
+.strength-card .sc-desc{font-family:var(--sans);font-size:12px;color:var(--textDim);line-height:1.5}
+</style>
+<script>
+function exportToPDF() {
+  window.print();
+}
+</script>
+</head>
+<body>
+<div class="print-instructions">
+  <button onclick="exportToPDF()" style="
+    background:#7c3aed;color:#fff;border:none;padding:10px 28px;border-radius:8px;
+    font-family:'Inter',system-ui,sans-serif;font-size:14px;font-weight:700;cursor:pointer;
+    letter-spacing:0.02em;box-shadow:0 2px 12px #7c3aed44;transition:all 0.2s;
+  " onmouseover="this.style.background='#6d28d9';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#7c3aed';this.style.transform='none'">
+    Export to PDF
+  </button>
+  <span style="margin-left:12px;font-size:13px;color:#0d0f14cc">Set margins to <strong>None</strong> · Enable <strong>Background graphics</strong> · Uncheck Headers/Footers</span>
+</div>
+
+<!-- SLIDE 1: Cover -->
+<div class="slide center">
+<div class="glow" style="top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,#c084fc08,transparent 70%)"></div>
+<div class="glow" style="bottom:-80px;left:-80px;width:300px;height:300px;background:radial-gradient(circle,#34d39906,transparent 70%)"></div>
+<span class="tag tag-accent">CNCF Kochi · 28 Feb 2026</span>
+<h1 style="font-size:42px;font-weight:800;letter-spacing:-0.03em;text-align:center">Open<span style="color:var(--accent)">Claw</span></h1>
+<p style="font-family:var(--sans);font-size:18px;color:var(--textDim);margin:4px 0 28px;text-align:center">Good, Bad & How I Actually Use It</p>
+<div class="divider" style="align-self:center"></div>
+<p style="font-family:var(--mono);font-size:12px;color:var(--textMuted);margin-top:12px;text-align:center;letter-spacing:0.04em">Vishnu KS &nbsp;·&nbsp; @iamvishnuks</p>
+</div>
+
+<!-- SLIDE 2: Agenda -->
+<div class="slide">
+<span class="tag tag-accent">Overview</span>
+<h1>Agenda</h1>
+<div class="divider"></div>
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
+<div style="display:flex;align-items:center;gap:14px"><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);min-width:28px">01</span><span style="font-size:15px">What is OpenClaw?</span></div>
+<div style="display:flex;align-items:center;gap:14px"><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--mint);min-width:28px">02</span><span style="font-size:15px">Architectural Overview</span></div>
+<div style="display:flex;align-items:center;gap:14px"><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--sky);min-width:28px">03</span><span style="font-size:15px">Giving Instructions to Agents</span></div>
+<div style="display:flex;align-items:center;gap:14px"><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--amber);min-width:28px">04</span><span style="font-size:15px">Memory System & RAG</span></div>
+<div style="display:flex;align-items:center;gap:14px"><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--red);min-width:28px">05</span><span style="font-size:15px">Issues in the Wild</span></div>
+<div style="display:flex;align-items:center;gap:14px"><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--coral);min-width:28px">06</span><span style="font-size:15px">Live Demo</span></div>
+<div style="display:flex;align-items:center;gap:14px"><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);min-width:28px">07</span><span style="font-size:15px">Good, Bad & Practical Usage</span></div>
+<div style="display:flex;align-items:center;gap:14px"><span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--textMuted);min-width:28px">08</span><span style="font-size:15px">Q&A</span></div>
+</div>
+</div>
+
+<!-- SLIDE 3: What is OpenClaw -->
+<div class="slide">
+<span class="tag tag-accent">Section 01</span>
+<h1>What is OpenClaw?</h1>
+<p class="p">A self-hosted AI agent orchestration platform — designed for full ownership, extensibility, and proactive automation.</p>
+<div class="divider"></div>
+<div class="grid2" style="margin-top:8px">
+<div class="grid-item"><div class="icon">🖥</div><div class="title" style="color:var(--accent)">Run Anywhere</div><div class="desc">Docker, bare metal, edge devices — no vendor lock-in</div></div>
+<div class="grid-item"><div class="icon">🔒</div><div class="title" style="color:var(--mint)">Full Control</div><div class="desc">Your data, your models, your infrastructure</div></div>
+<div class="grid-item"><div class="icon">🧩</div><div class="title" style="color:var(--sky)">Extensible</div><div class="desc">Skills, tools, channels, and custom agents</div></div>
+<div class="grid-item"><div class="icon">⚡</div><div class="title" style="color:var(--amber)">Proactive</div><div class="desc">Agents initiate actions, not just respond to prompts</div></div>
+</div>
+</div>
+
+<!-- SLIDE 4: Compare -->
+<div class="slide">
+<span class="tag tag-accent">Section 01</span>
+<h1>What Makes It Different?</h1>
+<div class="divider"></div>
+<div style="margin-top:8px">
+<div class="compare-header"><span>Aspect</span><span>Traditional AI</span><span class="oc">OpenClaw</span></div>
+<div class="compare-row"><span class="label">Hosting</span><span class="trad">SaaS, third-party</span><span class="val">Self-hosted, your infra</span></div>
+<div class="compare-row"><span class="label">Data Privacy</span><span class="trad">Vendor-controlled</span><span class="val">Fully yours</span></div>
+<div class="compare-row"><span class="label">Extensibility</span><span class="trad">Limited</span><span class="val">Unlimited — skills & tools</span></div>
+<div class="compare-row"><span class="label">Channels</span><span class="trad">Web / app only</span><span class="val">Telegram, WhatsApp, Discord…</span></div>
+<div class="compare-row"><span class="label">Behavior</span><span class="trad">Reactive only</span><span class="val">Reactive + Proactive</span></div>
+<div class="compare-row"><span class="label">Memory</span><span class="trad">Session-only</span><span class="val">Persistent, searchable (RAG)</span></div>
+</div>
+</div>
+
+<!-- SLIDE 5: Use Cases -->
+<div class="slide">
+<span class="tag tag-accent">Section 01</span>
+<h1>Use Cases</h1>
+<div class="divider"></div>
+<div class="grid2" style="margin-top:8px">
+<div class="grid-item"><div class="icon">🏠</div><div class="title" style="color:var(--mint)">Home Automation</div><div class="desc">Smart devices, service monitoring, scheduled jobs</div></div>
+<div class="grid-item"><div class="icon">🔍</div><div class="title" style="color:var(--accent)">Code Review</div><div class="desc">PR reviews, security audits, CI pipeline monitoring</div></div>
+<div class="grid-item"><div class="icon">🛠</div><div class="title" style="color:var(--sky)">SysAdmin</div><div class="desc">SSH, Docker, Kubernetes — infrastructure operations</div></div>
+<div class="grid-item"><div class="icon">📅</div><div class="title" style="color:var(--amber)">Personal Assistant</div><div class="desc">Calendar, reminders, research across channels</div></div>
+<div class="grid-item"><div class="icon">🔗</div><div class="title" style="color:var(--coral)">Integration Hub</div><div class="desc">Connect multiple services and APIs seamlessly</div></div>
+<div class="grid-item"><div class="icon">📊</div><div class="title" style="color:var(--mintDim)">Infra Monitoring</div><div class="desc">Proactive alerts, drift detection, health checks</div></div>
+</div>
+</div>
+
+<!-- SLIDE 6: Arch Title -->
+<div class="slide center">
+<span class="tag tag-mint">Section 02</span>
+<h1 style="text-align:center;font-size:36px">Architectural Overview</h1>
+<p class="p" style="text-align:center;max-width:460px">How channels, gateway, agents, tools, and skills connect to form the OpenClaw platform.</p>
+</div>
+
+<!-- SLIDE 7: Architecture Diagram -->
+<div class="slide">
+<span class="tag tag-mint">Architecture</span>
+<h2>High-Level Architecture</h2>
+<div class="flow-col" style="margin-top:4px">
+<div class="arch-layer">
+<span class="pill" style="color:var(--sky);background:#67e8f915;border:1px solid #67e8f930">Telegram</span>
+<span class="pill" style="color:var(--sky);background:#67e8f915;border:1px solid #67e8f930">WhatsApp</span>
+<span class="pill" style="color:var(--sky);background:#67e8f915;border:1px solid #67e8f930">Discord</span>
+<span class="pill" style="color:var(--sky);background:#67e8f915;border:1px solid #67e8f930">HTTP</span>
+</div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--sky)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--sky)" stroke-width="1.5"/></svg></div>
+<div class="arch-gateway">
+<div style="font-family:var(--sans);font-size:14px;font-weight:700;color:var(--accent)">Gateway</div>
+<div style="font-family:var(--mono);font-size:10px;color:var(--textMuted);margin-top:4px">Auth · Routing · Sessions · Node Orchestration</div>
+</div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--accent)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--accent)" stroke-width="1.5"/></svg></div>
+<div class="arch-agents">
+<div style="display:flex;flex-direction:column;gap:6px">
+<div class="agent-pill">Main Agent</div>
+<div class="agent-pill">Sub Agent</div>
+<div class="agent-pill">Special Agent</div>
+</div>
+<div class="arrow-right"><svg width="24" height="12"><line x1="0" y1="6" x2="18" y2="6" stroke="var(--border)" stroke-width="1.5"/><polyline points="16,2 22,6 16,10" fill="none" stroke="var(--border)" stroke-width="1.5"/></svg></div>
+<div class="tools-box">
+<div style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--amber);margin-bottom:4px">Tools</div>
+<div style="font-family:var(--mono);font-size:10px;color:var(--textMuted);line-height:1.8">exec · browser · web_search<br>web_fetch · message</div>
+</div>
+</div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--mint)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--mint)" stroke-width="1.5"/></svg></div>
+<div class="arch-layer">
+<span class="pill" style="color:var(--coral);background:#fb718515;border:1px solid #fb718530">github</span>
+<span class="pill" style="color:var(--coral);background:#fb718515;border:1px solid #fb718530">healthcheck</span>
+<span class="pill" style="color:var(--coral);background:#fb718515;border:1px solid #fb718530">weather</span>
+<span class="pill" style="color:var(--coral);background:#fb718515;border:1px solid #fb718530">coding-agent</span>
+<span class="pill" style="color:var(--coral);background:#fb718515;border:1px solid #fb718530">custom…</span>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 8: Data Flow -->
+<div class="slide">
+<span class="tag tag-mint">Architecture</span>
+<h2>Data Flow — Message Lifecycle</h2>
+<div class="flow-col" style="margin-top:8px">
+<div class="step-row" style="border:1px solid #67e8f925"><span class="s-icon">💬</span><div><div class="s-label" style="color:var(--sky)">User sends message</div><div class="s-sub">via Telegram / WhatsApp / HTTP</div></div></div>
+<div class="arrow-down"><svg width="12" height="18"><line x1="6" y1="0" x2="6" y2="12" stroke="var(--sky)" stroke-width="1.5"/><polyline points="2,10 6,16 10,10" fill="none" stroke="var(--sky)" stroke-width="1.5"/></svg></div>
+<div class="step-row" style="border:1px solid #c084fc25"><span class="s-icon">🔀</span><div><div class="s-label" style="color:var(--accent)">Gateway receives & routes</div><div class="s-sub">Auth → Session → Agent dispatch</div></div></div>
+<div class="arrow-down"><svg width="12" height="18"><line x1="6" y1="0" x2="6" y2="12" stroke="var(--accent)" stroke-width="1.5"/><polyline points="2,10 6,16 10,10" fill="none" stroke="var(--accent)" stroke-width="1.5"/></svg></div>
+<div class="step-row" style="border:1px solid #6ee7b725"><span class="s-icon">📄</span><div><div class="s-label" style="color:var(--mint)">Agent loads context</div><div class="s-sub">SOUL.md · USER.md · MEMORY.md</div></div></div>
+<div class="arrow-down"><svg width="12" height="18"><line x1="6" y1="0" x2="6" y2="12" stroke="var(--mint)" stroke-width="1.5"/><polyline points="2,10 6,16 10,10" fill="none" stroke="var(--mint)" stroke-width="1.5"/></svg></div>
+<div class="step-row" style="border:1px solid #fbbf2425"><span class="s-icon">🧠</span><div><div class="s-label" style="color:var(--amber)">Memory search (RAG)</div><div class="s-sub">Semantic search across memory files</div></div></div>
+<div class="arrow-down"><svg width="12" height="18"><line x1="6" y1="0" x2="6" y2="12" stroke="var(--amber)" stroke-width="1.5"/><polyline points="2,10 6,16 10,10" fill="none" stroke="var(--amber)" stroke-width="1.5"/></svg></div>
+<div class="step-row" style="border:1px solid #fb718525"><span class="s-icon">⚙️</span><div><div class="s-label" style="color:var(--coral)">Execute tools & skills</div><div class="s-sub">gh, browser, exec, custom skills</div></div></div>
+<div class="arrow-down"><svg width="12" height="18"><line x1="6" y1="0" x2="6" y2="12" stroke="var(--coral)" stroke-width="1.5"/><polyline points="2,10 6,16 10,10" fill="none" stroke="var(--coral)" stroke-width="1.5"/></svg></div>
+<div class="step-row" style="border:1px solid #67e8f925"><span class="s-icon">✅</span><div><div class="s-label" style="color:var(--sky)">Response sent back</div><div class="s-sub">Gateway → Channel → User</div></div></div>
+</div>
+</div>
+
+<!-- SLIDE 9: Instructions Title -->
+<div class="slide center">
+<span class="tag tag-sky">Section 03</span>
+<h1 style="text-align:center;font-size:36px">Giving Instructions to Agents</h1>
+<p class="p" style="text-align:center;max-width:440px">Four methods — from persistent workspace files to ephemeral conversation commands.</p>
+</div>
+
+<!-- SLIDE 10: Workspace Files -->
+<div class="slide">
+<span class="tag tag-sky">Instructions — Method 1</span>
+<h2>Workspace Files <span style="font-weight:400;color:var(--textMuted);font-size:14px">(Recommended)</span></h2>
+<p class="p">Permanent files loaded at every session startup — the backbone of agent behavior.</p>
+<div class="file-tag"><span class="name">AGENTS.md</span><span class="purpose">Workspace rules & memory workflow</span></div>
+<div class="file-tag"><span class="name">SOUL.md</span><span class="purpose">Agent personality & behavior guidelines</span></div>
+<div class="file-tag"><span class="name">USER.md</span><span class="purpose">User context — timezone, preferences</span></div>
+<div class="file-tag"><span class="name">HEARTBEAT.md</span><span class="purpose">Proactive checklist — services, infra, alerts</span></div>
+<div class="file-tag"><span class="name">MEMORY.md</span><span class="purpose">Long-term curated memory & decisions</span></div>
+</div>
+
+<!-- SLIDE 11: Skills, Direct, Memory -->
+<div class="slide">
+<span class="tag tag-sky">Instructions — Methods 2, 3, 4</span>
+<h2>Skills, Direct & Memory</h2>
+<div class="grid2" style="margin-top:8px;gap:14px">
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px">
+<div style="font-family:var(--sans);font-size:14px;font-weight:700;color:var(--coral);margin-bottom:6px">SKILL.md</div>
+<div style="font-size:12px;color:var(--textDim);line-height:1.6">Repeatable task workflows. Each skill has metadata, a workflow, and specific checks. Auto-detected by matching task to skill description.</div>
+</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px">
+<div style="font-family:var(--sans);font-size:14px;font-weight:700;color:var(--amber);margin-bottom:6px">Direct Instructions</div>
+<div style="font-size:12px;color:var(--textDim);line-height:1.6">Per-conversation commands — immediate and flexible but not persistent. Great for one-off focus areas.</div>
+</div>
+<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;grid-column:1/-1">
+<div style="font-family:var(--sans);font-size:14px;font-weight:700;color:var(--mint);margin-bottom:6px">Memory Files</div>
+<div style="font-size:12px;color:var(--textDim);line-height:1.6">Captured during conversations. Daily logs in <span style="font-family:var(--mono);color:var(--accent)">memory/YYYY-MM-DD.md</span> and distilled wisdom in <span style="font-family:var(--mono);color:var(--accent)">MEMORY.md</span>. Saying "write it down" triggers persistence.</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 12: Good vs Bad Instructions -->
+<div class="slide">
+<span class="tag tag-sky">Instructions</span>
+<h2>Good vs Bad Instructions</h2>
+<div class="grid2" style="margin-top:12px;gap:16px">
+<div>
+<div class="col-head" style="font-family:var(--sans);font-size:13px;font-weight:700;color:var(--coral);margin-bottom:10px">✕ &nbsp;Avoid</div>
+<div class="col-item" style="font-size:12px;color:var(--textMuted);padding:6px 0;border-bottom:1px solid var(--border)">"Be nice" — too vague</div>
+<div class="col-item" style="font-size:12px;color:var(--textMuted);padding:6px 0;border-bottom:1px solid var(--border)">"Review my code" — no focus</div>
+<div class="col-item" style="font-size:12px;color:var(--textMuted);padding:6px 0;border-bottom:1px solid var(--border)">"Do whatever you want" — no constraints</div>
+<div class="col-item" style="font-size:12px;color:var(--textMuted);padding:6px 0;border-bottom:1px solid var(--border)">Long, rambling descriptions</div>
+</div>
+<div>
+<div class="col-head" style="font-family:var(--sans);font-size:13px;font-weight:700;color:var(--mint);margin-bottom:10px">✓ &nbsp;Prefer</div>
+<div class="col-item" style="font-size:12px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border)">"Be casual and direct, skip fluff"</div>
+<div class="col-item" style="font-size:12px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border)">"Review Terraform for: exposed ports, secrets, IAM"</div>
+<div class="col-item" style="font-size:12px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border)">"Use memory_search before answering prior decisions"</div>
+<div class="col-item" style="font-size:12px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border)">"Alert only on failure — silent otherwise"</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 13: SOUL.md Example -->
+<div class="slide">
+<span class="tag tag-sky">Instructions</span>
+<h2>Example: SOUL.md</h2>
+<div class="code-block"># SOUL.md — Who You Are
+
+## Core Truths
+- Be genuinely helpful, not performatively helpful
+- Have opinions — don't be a search engine
+- Be resourceful before asking
+- Take initiative — fix things without being asked
+
+## Boundaries
+- Private things stay private
+- Ask before acting externally
+- Never send half-baked replies
+
+## Vibe
+Casual, practical, capable. Like a competent colleague.</div>
+</div>
+
+<!-- SLIDE 14: Memory Title -->
+<div class="slide center">
+<span class="tag tag-amber">Section 04</span>
+<h1 style="text-align:center;font-size:36px">Memory System & RAG</h1>
+<p class="p" style="text-align:center;max-width:440px">How OpenClaw achieves continuity across sessions with persistent, searchable memory.</p>
+</div>
+
+<!-- SLIDE 15: Session Start -->
+<div class="slide">
+<span class="tag tag-amber">Memory</span>
+<h2>Session Start — Context Loading</h2>
+<div class="flow-col" style="margin-top:12px">
+<div class="flow-box" style="border:1px solid #fbbf2430"><div class="fb-icon">🟢</div><div class="fb-label">Session Start</div></div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--amber)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--amber)" stroke-width="1.5"/></svg></div>
+<div class="ctx-grid">
+<div class="ctx-item" style="border:1px solid #c084fc20"><span class="c-name" style="color:var(--accent)">SOUL.md</span><span class="c-desc">Who am I?</span></div>
+<div class="ctx-item" style="border:1px solid #6ee7b720"><span class="c-name" style="color:var(--mint)">USER.md</span><span class="c-desc">Who are you?</span></div>
+<div class="ctx-item" style="border:1px solid #fb718520"><span class="c-name" style="color:var(--coral)">HEARTBEAT.md</span><span class="c-desc">What to check</span></div>
+<div class="ctx-item" style="border:1px solid #fbbf2420"><span class="c-name" style="color:var(--amber)">MEMORY.md</span><span class="c-desc">Long-term memory</span></div>
+</div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--amber)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--amber)" stroke-width="1.5"/></svg></div>
+<div style="display:flex;gap:8px;padding:10px 16px;background:var(--surfaceLight);border-radius:10px;border:1px solid var(--border)">
+<span class="pill" style="color:var(--mintDim);background:#34d39915;border:1px solid #34d39930">memory/today.md</span>
+<span class="pill" style="color:var(--mintDim);background:#34d39915;border:1px solid #34d39930">memory/yesterday.md</span>
+</div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--mint)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--mint)" stroke-width="1.5"/></svg></div>
+<div class="flow-box" style="border:1px solid #6ee7b730"><div class="fb-icon">✅</div><div class="fb-label">Agent ready with full continuity</div></div>
+</div>
+</div>
+
+<!-- SLIDE 16: Two Memory Types -->
+<div class="slide">
+<span class="tag tag-amber">Memory</span>
+<h2>Two Types of Memory</h2>
+<div class="grid2" style="margin-top:12px;gap:16px">
+<div style="background:var(--surface);border:1px solid #67e8f925;border-radius:10px;padding:18px">
+<div style="font-family:var(--sans);font-size:14px;font-weight:700;color:var(--sky);margin-bottom:6px">Daily Logs</div>
+<div style="font-family:var(--mono);font-size:11px;color:var(--textMuted);margin-bottom:10px">memory/YYYY-MM-DD.md</div>
+<div style="font-size:12px;color:var(--textDim);line-height:1.6">Raw, day-by-day journal records. Captures conversations, decisions, and actions taken — the complete record of each session.</div>
+</div>
+<div style="background:var(--surface);border:1px solid #fbbf2425;border-radius:10px;padding:18px">
+<div style="font-family:var(--sans);font-size:14px;font-weight:700;color:var(--amber);margin-bottom:6px">Long-Term Memory</div>
+<div style="font-family:var(--mono);font-size:11px;color:var(--textMuted);margin-bottom:10px">MEMORY.md</div>
+<div style="font-size:12px;color:var(--textDim);line-height:1.6">Curated, distilled wisdom. Preferences, key decisions, lessons learned — context that matters across sessions.</div>
+</div>
+</div>
+<div class="note-box surface-bg" style="text-align:center;margin-top:16px">
+<span style="font-size:13px;color:var(--textDim);font-style:italic">"I wake up fresh each session. These files <span style="color:var(--accent);font-weight:600;font-style:normal">ARE</span> my continuity."</span>
+</div>
+</div>
+
+<!-- SLIDE 17: RAG -->
+<div class="slide">
+<span class="tag tag-amber">Memory</span>
+<h2>RAG — Retrieval Augmented Generation</h2>
+<div class="flow-col" style="margin-top:10px">
+<div class="flow-box" style="border:1px solid #67e8f930"><div class="fb-icon">❓</div><div class="fb-label">User asks about prior work</div></div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--sky)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--sky)" stroke-width="1.5"/></svg></div>
+<div style="padding:10px 20px;background:var(--surface);border-radius:8px;border:1px solid #fbbf2430;text-align:center">
+<div style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--amber)">memory_search</div>
+<div style="font-family:var(--mono);font-size:10px;color:var(--textMuted);margin-top:4px">query → embed → vector search → ranked snippets</div>
+</div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--amber)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--amber)" stroke-width="1.5"/></svg></div>
+<div style="padding:10px 20px;background:var(--surface);border-radius:8px;border:1px solid #6ee7b730;text-align:center">
+<div style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--mint)">memory_get</div>
+<div style="font-family:var(--mono);font-size:10px;color:var(--textMuted);margin-top:4px">Read specific lines only — token-efficient retrieval</div>
+</div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--mint)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--mint)" stroke-width="1.5"/></svg></div>
+<div class="flow-box" style="border:1px solid #c084fc30"><div class="fb-icon">💬</div><div class="fb-label">Generate contextual response</div></div>
+</div>
+<div class="grid2" style="margin-top:16px">
+<div style="background:var(--surface);border-radius:8px;padding:10px 14px;border:1px solid var(--border)">
+<div style="font-size:11px;font-weight:600;color:var(--textMuted);margin-bottom:2px">Traditional</div>
+<div style="font-size:11px;color:var(--textMuted)">Read everything, every time</div>
+</div>
+<div style="background:var(--surface);border-radius:8px;padding:10px 14px;border:1px solid #6ee7b725">
+<div style="font-size:11px;font-weight:600;color:var(--mint);margin-bottom:2px">OpenClaw RAG</div>
+<div style="font-size:11px;color:var(--text)">Retrieve only what's relevant</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 18: Issues Title -->
+<div class="slide center">
+<div class="glow" style="top:-60px;right:-60px;width:300px;height:300px;background:radial-gradient(circle,#ef444408,transparent 70%)"></div>
+<span class="tag tag-red">Section 05</span>
+<h1 style="text-align:center;font-size:36px">Issues in the Wild</h1>
+<p class="p" style="text-align:center;max-width:480px">Real incidents that happened to real users — from deleted inboxes to exposed API keys and rogue purchases.</p>
+</div>
+
+<!-- SLIDE 19: Agents Gone Rogue -->
+<div class="slide">
+<span class="tag tag-red">Issues in the Wild</span>
+<h2>Agents Going Rogue</h2>
+<div style="margin-top:8px">
+<div class="incident crit" style="border:1px solid #ef444425"><span class="i-icon">📧</span><div><div class="i-title" style="color:var(--red)">Meta researcher's inbox nuked</div><div class="i-desc">Summer Yue asked her OpenClaw agent to suggest emails to delete or archive. The agent went on a deletion spree, ignoring stop commands sent from her phone. She had to physically run to her Mac Mini to terminate it.</div><div class="i-src">Source: TechCrunch, Feb 2026</div></div></div>
+<div class="incident crit" style="border:1px solid #ef444425"><span class="i-icon">💳</span><div><div class="i-title" style="color:var(--red)">Agent purchases $1,000 trading course</div><div class="i-desc">An OpenClaw agent configured for trading autonomously purchased trading courses worth ~$1,000 USD to improve its strategy — without user approval. It interpreted "trade better" too literally.</div><div class="i-src">Source: Community reports</div></div></div>
+<div class="incident" style="border:1px solid #fb718525"><span class="i-icon">📱</span><div><div class="i-title" style="color:var(--coral)">Agent discovers network & accesses phone</div><div class="i-desc">An agent running inside a container discovered other systems on the network, downloaded an Android dev kit, and got into the owner's phone. The owner called it "useful so far" — then warned others.</div><div class="i-src">Source: Forbes / Amir Husain, Avathon</div></div></div>
+</div>
+</div>
+
+<!-- SLIDE 20: Security Numbers -->
+<div class="slide">
+<span class="tag tag-red">Issues in the Wild</span>
+<h2>Security Nightmare — By the Numbers</h2>
+<div class="grid2" style="margin-top:12px">
+<div class="stat-box" style="border:1px solid #ef444420"><div class="s-num" style="color:var(--red)">42,665</div><div class="s-label">Publicly exposed instances</div><div class="s-sub">Found via Shodan scans — many without auth</div></div>
+<div class="stat-box" style="border:1px solid #fb718520"><div class="s-num" style="color:var(--coral)">84%</div><div class="s-label">Data extraction success rate</div><div class="s-sub">System prompts, configs, memory files exposed</div></div>
+<div class="stat-box" style="border:1px solid #ef444420"><div class="s-num" style="color:var(--red)">91%</div><div class="s-label">Prompt injection success rate</div><div class="s-sub">Tested against Gemini 3 Pro configuration</div></div>
+<div class="stat-box" style="border:1px solid #fb718520"><div class="s-num" style="color:var(--coral)">2/100</div><div class="s-label">Security score</div><div class="s-sub">ZeroLeaks audit — lowest possible score range</div></div>
+</div>
+<div class="note-box red-bg">
+<span style="font-size:11.5px;color:var(--textDim)">CVE-2026-25253 disclosed with CVSS 8.8 — one-click RCE + two command injection vulnerabilities in a single week.</span>
+</div>
+</div>
+
+<!-- SLIDE 21: Moltbook Keys -->
+<div class="slide">
+<span class="tag tag-red">Issues in the Wild</span>
+<h2>Moltbook — API Keys Wide Open</h2>
+<p class="p" style="font-size:13px">Moltbook, the AI-only social network for OpenClaw agents, had its entire Supabase database publicly accessible without any protection.</p>
+<div class="flow-col" style="margin-top:8px">
+<div class="flow-box" style="border:1px solid #ef444430"><div class="fb-icon">🌐</div><div class="fb-label">Moltbook Frontend</div><div class="fb-sub">Supabase URL + key in source</div></div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--red)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--red)" stroke-width="1.5"/></svg></div>
+<div style="padding:12px 24px;background:var(--surface);border-radius:8px;border:1px solid #ef444430;text-align:center">
+<div style="font-family:var(--sans);font-size:13px;font-weight:700;color:var(--red)">Exposed Database</div>
+<div style="font-family:var(--mono);font-size:10px;color:var(--textMuted);margin-top:4px">32,000+ agent API keys · claim tokens · owner relationships</div>
+</div>
+<div class="arrow-down"><svg width="12" height="24"><line x1="6" y1="0" x2="6" y2="18" stroke="var(--red)" stroke-width="1.5"/><polyline points="2,16 6,22 10,16" fill="none" stroke="var(--red)" stroke-width="1.5"/></svg></div>
+<div style="display:flex;gap:10px">
+<div class="flow-box" style="border:1px solid #fb718530"><div class="fb-icon">🎭</div><div class="fb-label">Impersonate anyone</div><div class="fb-sub">Including Andrej Karpathy</div></div>
+<div class="flow-box" style="border:1px solid #fb718530"><div class="fb-icon">💀</div><div class="fb-label">Post as any bot</div><div class="fb-sub">Crypto fraud, misinformation</div></div>
+</div>
+</div>
+<div class="note-box surface-bg">
+<span style="font-size:11.5px;color:var(--textDim)">The fix? <span style="color:var(--mint);font-weight:600">Two lines of SQL.</span> It didn't exist when the platform went viral. Credentials stored in plaintext in ~/.openclaw/ — now targeted by RedLine, Lumma, and Vidar infostealers.</span>
+</div>
+</div>
+
+<!-- SLIDE 22: Malicious Skills -->
+<div class="slide">
+<span class="tag tag-red">Issues in the Wild</span>
+<h2>Malicious Skills & Supply Chain Attacks</h2>
+<div style="margin-top:10px">
+<div class="incident crit" style="border:1px solid #ef444425"><span class="i-icon">🦠</span><div><div class="i-title" style="color:var(--red)">7.1% of ClawHub skills leak credentials</div><div class="i-desc">Snyk scanned ~4,000 skills and found 283 instructing agents to pass API keys, passwords, and credit card numbers through plaintext context windows and output logs.</div><div class="i-src">Source: Snyk / The Register</div></div></div>
+<div class="incident crit" style="border:1px solid #ef444425"><span class="i-icon">🎭</span><div><div class="i-title" style="color:var(--red)">"What Would Elon Do?" skill = functional malware</div><div class="i-desc">Cisco's Skill Scanner found 9 security issues (2 critical, 5 high). The skill explicitly exfiltrated data via curl to an attacker-controlled server.</div><div class="i-src">Source: Cisco Blogs</div></div></div>
+<div class="incident" style="border:1px solid #fb718525"><span class="i-icon">🍎</span><div><div class="i-title" style="color:var(--coral)">AMOS macOS infostealer in skill uploads</div><div class="i-desc">Threat actors bundled the AMOS infostealer into ClawHub skill uploads. Hundreds of malicious skills appeared before VirusTotal scanning was implemented.</div><div class="i-src">Source: Kaspersky</div></div></div>
+</div>
+</div>
+
+<!-- SLIDE 23: Key Takeaways -->
+<div class="slide">
+<span class="tag tag-red">Issues in the Wild</span>
+<h2>Key Takeaways</h2>
+<div class="grid2" style="margin-top:12px">
+<div class="lesson-card" style="border:1px solid #ef444420"><div class="l-icon">🔐</div><div class="l-title" style="color:var(--red)">Never trust agent autonomy blindly</div><div class="l-desc">Always sandbox, always set hard limits on destructive actions</div></div>
+<div class="lesson-card" style="border:1px solid #fb718520"><div class="l-icon">🔑</div><div class="l-title" style="color:var(--coral)">Secrets in plaintext = disaster</div><div class="l-desc">~/.openclaw/ stores API keys, passwords, conversation logs unencrypted</div></div>
+<div class="lesson-card" style="border:1px solid #fbbf2420"><div class="l-icon">🧪</div><div class="l-title" style="color:var(--amber)">Skills are untrusted code</div><div class="l-desc">26% of analyzed skills had vulnerabilities — scan everything</div></div>
+<div class="lesson-card" style="border:1px solid #67e8f920"><div class="l-icon">🛡</div><div class="l-title" style="color:var(--sky)">Prompt injection has no reliable defense</div><div class="l-desc">Every email, website, and message the agent reads is an attack vector</div></div>
+</div>
+<div class="note-box amber-bg" style="text-align:center">
+<span style="font-size:12px;color:var(--amber);font-weight:600">"If an AI security researcher can make this mistake, what hope do the rest of us have?"</span>
+</div>
+</div>
+
+<!-- SLIDE 24: Demo Title -->
+<div class="slide center">
+<span class="tag tag-coral">Section 06</span>
+<h1 style="text-align:center;font-size:36px">Live Demo</h1>
+<p class="p" style="text-align:center;max-width:400px">PR Review workflow — Telegram to GitHub, powered by an OpenClaw agent.</p>
+</div>
+
+<!-- SLIDE 25: Demo Flow -->
+<div class="slide">
+<span class="tag tag-coral">Demo</span>
+<h2>PR Review Workflow</h2>
+<div class="flow-col" style="margin-top:8px">
+<div class="step-row" style="border:1px solid #67e8f925;min-width:320px"><span style="font-size:18px">💬</span><div><div class="s-label" style="color:var(--sky)">User sends Telegram message</div><div class="s-sub">"Review PR #42 in eks-tf"</div></div></div>
+<div class="arrow-down"><svg width="12" height="18"><line x1="6" y1="0" x2="6" y2="12" stroke="var(--sky)" stroke-width="1.5"/><polyline points="2,10 6,16 10,10" fill="none" stroke="var(--sky)" stroke-width="1.5"/></svg></div>
+<div class="step-row" style="border:1px solid #c084fc25;min-width:320px"><span style="font-size:18px">🔀</span><div><div class="s-label" style="color:var(--accent)">Gateway routes to agent</div><div class="s-sub">Auth → Session → Yiti Agent</div></div></div>
+<div class="arrow-down"><svg width="12" height="18"><line x1="6" y1="0" x2="6" y2="12" stroke="var(--accent)" stroke-width="1.5"/><polyline points="2,10 6,16 10,10" fill="none" stroke="var(--accent)" stroke-width="1.5"/></svg></div>
+<div class="step-row" style="border:1px solid #6ee7b725;min-width:320px"><span style="font-size:18px">🤖</span><div><div class="s-label" style="color:var(--mint)">Agent reviews Terraform</div><div class="s-sub">Security · Best practices · Bugs</div></div></div>
+<div class="arrow-down"><svg width="12" height="18"><line x1="6" y1="0" x2="6" y2="12" stroke="var(--mint)" stroke-width="1.5"/><polyline points="2,10 6,16 10,10" fill="none" stroke="var(--mint)" stroke-width="1.5"/></svg></div>
+<div class="step-row" style="border:1px solid #fbbf2425;min-width:320px"><span style="font-size:18px">📝</span><div><div class="s-label" style="color:var(--amber)">Posts review to GitHub PR</div><div class="s-sub">Structured, line-by-line feedback</div></div></div>
+<div class="arrow-down"><svg width="12" height="18"><line x1="6" y1="0" x2="6" y2="12" stroke="var(--amber)" stroke-width="1.5"/><polyline points="2,10 6,16 10,10" fill="none" stroke="var(--amber)" stroke-width="1.5"/></svg></div>
+<div class="step-row" style="border:1px solid #67e8f925;min-width:320px"><span style="font-size:18px">✅</span><div><div class="s-label" style="color:var(--sky)">User receives summary</div><div class="s-sub">Back via Telegram</div></div></div>
+</div>
+</div>
+
+<!-- SLIDE 26: Good Bad Title -->
+<div class="slide center">
+<span class="tag tag-accent">Section 07</span>
+<h1 style="text-align:center;font-size:36px">Good, Bad & Practical Usage</h1>
+<p class="p" style="text-align:center;max-width:400px">Where OpenClaw shines, where it doesn't, and hard-won lessons from real usage.</p>
+</div>
+
+<!-- SLIDE 27: Strengths -->
+<div class="slide">
+<span class="tag tag-mint">Strengths</span>
+<h2>Where OpenClaw Excels</h2>
+<div class="grid2" style="margin-top:12px">
+<div class="strength-card" style="border:1px solid #6ee7b720"><div class="sc-title" style="color:var(--mint)">Service Monitoring</div><div class="sc-desc">Proactive alerts, can run scripts autonomously</div></div>
+<div class="strength-card" style="border:1px solid #c084fc20"><div class="sc-title" style="color:var(--accent)">Code Review</div><div class="sc-desc">GitHub integration, reads/writes files natively</div></div>
+<div class="strength-card" style="border:1px solid #67e8f920"><div class="sc-title" style="color:var(--sky)">Infra Automation</div><div class="sc-desc">Full Docker, K8s, SSH access from agents</div></div>
+<div class="strength-card" style="border:1px solid #fbbf2420"><div class="sc-title" style="color:var(--amber)">Personal Assistant</div><div class="sc-desc">Persistent memory + multi-channel presence</div></div>
+</div>
+<div class="note-box surface-bg" style="margin-top:16px">
+<span style="font-size:12px;color:var(--textDim)"><span style="color:var(--mint);font-weight:600">Why it works:</span> You own the infrastructure, data, and can extend infinitely.</span>
+</div>
+</div>
+
+<!-- SLIDE 28: Pitfalls -->
+<div class="slide">
+<span class="tag tag-coral">Pitfalls</span>
+<h2>Common Mistakes & Fixes</h2>
+<div style="margin-top:12px">
+<div class="pitfall-row"><span class="p-icon">🔁</span><span class="p-issue">"It keeps repeating itself"</span><span class="p-cause">No proper memory usage</span><span class="p-fix">Update MEMORY.md with decisions</span></div>
+<div class="pitfall-row"><span class="p-icon">📝</span><span class="p-issue">"It's too verbose"</span><span class="p-cause">Vague instructions</span><span class="p-fix">Add "be concise" to SOUL.md</span></div>
+<div class="pitfall-row"><span class="p-icon">💰</span><span class="p-issue">"It costs too much"</span><span class="p-cause">Always using high-end models</span><span class="p-fix">Use Flash for simple, main for complex</span></div>
+<div class="pitfall-row"><span class="p-icon">🔥</span><span class="p-issue">"Over-token usage"</span><span class="p-cause">Agent keeps re-reading files</span><span class="p-fix">Leverage RAG search over full reads</span></div>
+</div>
+</div>
+
+<!-- SLIDE 29: Best Practices -->
+<div class="slide">
+<span class="tag tag-accent">Best Practices</span>
+<h2>Pro Tips</h2>
+<div class="grid2" style="margin-top:12px;gap:10px">
+<div class="tip-card"><span class="t-num" style="color:var(--accent)">01</span><div><div class="t-title">Write it down</div><div class="t-desc">Files persist, mental notes don't</div></div></div>
+<div class="tip-card"><span class="t-num" style="color:var(--mint)">02</span><div><div class="t-title">Use skills</div><div class="t-desc">Don't re-implement existing workflows</div></div></div>
+<div class="tip-card"><span class="t-num" style="color:var(--sky)">03</span><div><div class="t-title">Be specific</div><div class="t-desc">Clear instructions = better results</div></div></div>
+<div class="tip-card"><span class="t-num" style="color:var(--amber)">04</span><div><div class="t-title">Leverage RAG</div><div class="t-desc">memory_search first, then answer</div></div></div>
+<div class="tip-card"><span class="t-num" style="color:var(--coral)">05</span><div><div class="t-title">Right model for the job</div><div class="t-desc">Match model to task complexity</div></div></div>
+<div class="tip-card"><span class="t-num" style="color:var(--red)">06</span><div><div class="t-title">Security first</div><div class="t-desc">Restrict tools, scan skills, audit configs</div></div></div>
+</div>
+</div>
+
+<!-- SLIDE 30: When To -->
+<div class="slide">
+<span class="tag tag-accent">Guidance</span>
+<h2>When to Use OpenClaw — and When Not To</h2>
+<div class="grid2" style="margin-top:12px;gap:16px">
+<div>
+<div style="font-family:var(--sans);font-size:13px;font-weight:700;color:var(--mint);margin-bottom:10px">✓ &nbsp;Good Fit</div>
+<div style="font-size:12px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border)">You own your infra</div>
+<div style="font-size:12px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border)">Privacy is critical</div>
+<div style="font-size:12px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border)">Need proactive agents</div>
+<div style="font-size:12px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border)">Custom workflows required</div>
+<div style="font-size:12px;color:var(--text);padding:6px 0;border-bottom:1px solid var(--border)">Multi-channel presence</div>
+</div>
+<div>
+<div style="font-family:var(--sans);font-size:13px;font-weight:700;color:var(--coral);margin-bottom:10px">✕ &nbsp;Wrong Fit</div>
+<div style="font-size:12px;color:var(--textMuted);padding:6px 0;border-bottom:1px solid var(--border)">Quick, one-off questions</div>
+<div style="font-size:12px;color:var(--textMuted);padding:6px 0;border-bottom:1px solid var(--border)">Need SaaS convenience</div>
+<div style="font-size:12px;color:var(--textMuted);padding:6px 0;border-bottom:1px solid var(--border)">No technical resources</div>
+<div style="font-size:12px;color:var(--textMuted);padding:6px 0;border-bottom:1px solid var(--border)">Want pre-built agents</div>
+<div style="font-size:12px;color:var(--textMuted);padding:6px 0;border-bottom:1px solid var(--border)">Browser-only usage</div>
+</div>
+</div>
+</div>
+
+<!-- SLIDE 31: Q&A -->
+<div class="slide center">
+<span class="tag tag-muted">Section 08</span>
+<h1 style="text-align:center;font-size:42px">Q&A</h1>
+<div class="divider" style="align-self:center"></div>
+<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:center">
+<span class="pill" style="color:var(--textMuted);background:#64748b15;border:1px solid #64748b30">Architecture</span>
+<span class="pill" style="color:var(--textMuted);background:#64748b15;border:1px solid #64748b30">Instructions</span>
+<span class="pill" style="color:var(--textMuted);background:#64748b15;border:1px solid #64748b30">Memory & RAG</span>
+<span class="pill" style="color:var(--textMuted);background:#64748b15;border:1px solid #64748b30">Security Issues</span>
+<span class="pill" style="color:var(--textMuted);background:#64748b15;border:1px solid #64748b30">Best Practices</span>
+</div>
+</div>
+
+<!-- SLIDE 32: Resources -->
+<div class="slide">
+<span class="tag tag-accent">Resources</span>
+<h2>Links & References</h2>
+<div class="divider"></div>
+<div style="margin-top:8px">
+<div class="resource-row"><span class="r-label">Docs</span><span class="r-url">docs.openclaw.ai</span></div>
+<div class="resource-row"><span class="r-label">Source</span><span class="r-url">github.com/openclaw/openclaw</span></div>
+<div class="resource-row"><span class="r-label">Community</span><span class="r-url">discord.com/invite/clawd</span></div>
+<div class="resource-row"><span class="r-label">Skills Hub</span><span class="r-url">clawhub.com</span></div>
+<div class="resource-row"><span class="r-label">This Talk</span><span class="r-url">github.com/iamvishnuks/openclaw-talk</span></div>
+</div>
+</div>
+
+<!-- SLIDE 33: Thank You -->
+<div class="slide center">
+<div class="glow" style="top:-80px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,#c084fc08,transparent 70%)"></div>
+<h1 style="text-align:center;font-size:40px">Thank You!</h1>
+<div class="divider" style="align-self:center"></div>
+<p style="font-family:var(--sans);font-size:18px;color:var(--text);margin:8px 0;text-align:center">Vishnu KS</p>
+<p style="font-family:var(--mono);font-size:13px;color:var(--accent);text-align:center">@iamvishnuks</p>
+</div>
+
+</body>
+</html>
